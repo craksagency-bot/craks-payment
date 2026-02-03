@@ -217,10 +217,10 @@
       const month = document.getElementById('monthSelect').value;
       const [year, mon] = month.split('-').map(Number);
       const firstDay = month + '-01';
-      // Get last day of the month
-      const lastDayDate = new Date(year, mon, 0);
-      const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayDate.getDate()).padStart(2, '0');
-      console.log('Calculating for:', firstDay, 'to', lastDay);
+      // Last day of month
+      const lastDayNum = new Date(year, mon, 0).getDate();
+      const lastDay = month + '-' + String(lastDayNum).padStart(2, '0');
+      console.log('Month:', month, '| Range:', firstDay, 'to', lastDay);
 
       // Get payments
       const { data: payments } = await sb.from('project_payments').select('amount').gte('payment_date', firstDay).lte('payment_date', lastDay);
