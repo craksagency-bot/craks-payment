@@ -154,9 +154,12 @@
       let query = sb.from('project_payments').select('*, projects(project_name, client_name)').order('payment_date', { ascending: false });
 
       if (month) {
-        const [year, mon] = month.split('-').map(Number);
         const firstDay = month + '-01';
-        const lastDay = new Date(year, mon, 0).toISOString().split('T')[0];
+        const [year, mon] = month.split('-').map(Number);
+        // Get last day of the month (mon is 1-12, so new Date(year, mon, 0) gives last day of that month)
+        const lastDayDate = new Date(year, mon, 0);
+        const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayDate.getDate()).padStart(2, '0');
+        console.log('Filter:', firstDay, 'to', lastDay);
         query = query.gte('payment_date', firstDay).lte('payment_date', lastDay);
       }
       if (type) {
