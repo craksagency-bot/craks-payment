@@ -151,7 +151,7 @@
       const month = document.getElementById('filterMonth').value;
       const status = document.getElementById('filterStatus').value;
 
-      let query = sb.from('member_payouts').select('*, users(name, role)').order('month', { ascending: false }).order('created_at', { ascending: false });
+      let query = sb.from('member_payouts').select('*, users!member_payouts_user_id_fkey(name, role)').order('month', { ascending: false }).order('created_at', { ascending: false });
 
       if (month) query = query.eq('month', month);
       if (status) query = query.eq('status', status);
