@@ -231,7 +231,7 @@
       }
 
       // Load payouts
-      const { data: payouts } = await sb.from('member_payouts').select('*, users(name, role)').order('month', { ascending: false }).limit(10);
+      const { data: payouts } = await sb.from('member_payouts').select('*, users!member_payouts_user_id_fkey(name, role)').order('month', { ascending: false }).limit(10);
 
       const payTbody = document.getElementById('payoutsTable');
       if (!payouts || payouts.length === 0) {
