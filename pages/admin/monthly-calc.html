@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Monthly Calculation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #2563eb; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .nav-section { padding: 10px 20px 5px; font-size: 11px; text-transform: uppercase; opacity: 0.5; margin-top: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 25px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 8px 16px; font-size: 13px; }
+    .month-selector { display: flex; gap: 15px; align-items: center; margin-bottom: 25px; flex-wrap: wrap; }
+    .month-selector select { padding: 12px 20px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+    .summary-card { padding: 25px; border-radius: 12px; text-align: center; }
+    .summary-card.income { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+    .summary-card.expense { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+    .summary-card.profit { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+    .summary-card.locked { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+    .summary-card .label { font-size: 13px; color: #374151; margin-bottom: 8px; }
+    .summary-card .value { font-size: 28px; font-weight: bold; color: #1a1a2e; }
+    .distribution-box { background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+    .distribution-box h3 { margin-bottom: 20px; color: #0369a1; }
+    .dist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .dist-item { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .dist-item .role { font-size: 14px; color: #666; margin-bottom: 5px; }
+    .dist-item .percent { font-size: 24px; font-weight: bold; color: #2563eb; }
+    .dist-item .amount { font-size: 18px; font-weight: 600; color: #1a1a2e; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .locked-banner { background: #fef3c7; color: #92400e; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+      .summary-grid, .dist-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .summary-grid, .dist-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-header"><h2>CRAKS</h2></div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <div class="nav-section">Projects</div>
+      <a href="projects.html" class="nav-item"><i>📁</i> All Projects</a>
+      <a href="add-project.html" class="nav-item"><i>➕</i> Add Project</a>
+      <div class="nav-section">Finance</div>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="monthly-calc.html" class="nav-item active"><i>📈</i> Monthly Calculation</a>
+      <div class="nav-section">Payouts</div>
+      <a href="payouts.html" class="nav-item"><i>💸</i> Member Payouts</a>
+      <a href="company-fund.html" class="nav-item"><i>🏦</i> Company Fund</a>
+      <div class="nav-section">Management</div>
+      <a href="users.html" class="nav-item"><i>👥</i> Users</a>
+      <a href="bank-details.html" class="nav-item"><i>🏧</i> Bank Details</a>
+      <a href="audit-logs.html" class="nav-item"><i>📋</i> Audit Logs</a>
+    </div>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Monthly Calculation</h1>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="month-selector">
+          <label><strong>Select Month:</strong></label>
+          <select id="monthSelect" onchange="loadMonthData()"></select>
+          <button class="btn btn-primary" onclick="calculateMonth()">Calculate & Save</button>
+          <button class="btn btn-success" onclick="generatePayouts()">Generate Payouts</button>
+        </div>
+
+        <div id="lockedBanner" class="locked-banner" style="display:none;">
+          <span>🔒 This month is LOCKED. No changes allowed.</span>
+          <button class="btn btn-sm btn-warning" onclick="toggleLock()">Unlock</button>
+        </div>
+
+        <div id="unlockedBanner" class="locked-banner" style="display:none; background:#d1fae5; color:#065f46;">
+          <span>🔓 This month is UNLOCKED. Changes are allowed.</span>
+          <button class="btn btn-sm btn-danger" onclick="toggleLock()">Lock Month</button>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-grid">
+          <div class="summary-card income">
+            <div class="label">Total Income</div>
+            <div class="value" id="totalIncome">LKR 0</div>
+          </div>
+          <div class="summary-card expense">
+            <div class="label">Total Expenses</div>
+            <div class="value" id="totalExpense">LKR 0</div>
+          </div>
+          <div class="summary-card profit">
+            <div class="label">Net Profit</div>
+            <div class="value" id="netProfit">LKR 0</div>
+          </div>
+          <div class="summary-card locked">
+            <div class="label">Status</div>
+            <div class="value" id="monthStatus">Not Calculated</div>
+          </div>
+        </div>
+
+        <!-- Distribution -->
+        <div class="distribution-box">
+          <h3>💰 Profit Distribution (30-15-15-40)</h3>
+          <div class="dist-grid">
+            <div class="dist-item">
+              <div class="role">Founder (Ishaq)</div>
+              <div class="percent">30%</div>
+              <div class="amount" id="founderAmount">LKR 0</div>
+            </div>
+            <div class="dist-item">
+              <div class="role">Chief Advisor</div>
+              <div class="percent">15%</div>
+              <div class="amount" id="advisorAmount">LKR 0</div>
+            </div>
+            <div class="dist-item">
+              <div class="role">Company Fund</div>
+              <div class="percent">15%</div>
+              <div class="amount" id="fundAmount">LKR 0</div>
+            </div>
+            <div class="dist-item">
+              <div class="role">Team Pool</div>
+              <div class="percent">40%</div>
+              <div class="amount" id="teamAmount">LKR 0</div>
+            </div>
+          </div>
+          <div style="margin-top:20px; padding:15px; background:white; border-radius:8px;">
+            <strong>Team Members:</strong> <span id="teamCount">0</span> active |
+            <strong>Per Member:</strong> <span id="perMember">LKR 0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="card-header"><h3>Calculation History</h3></div>
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net Profit</th><th>Status</th><th>Calculated</th></tr>
+          </thead>
+          <tbody id="historyTable">
+            <tr><td colspan="6" style="text-align:center; padding:30px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    let currentUser = null;
+    let currentCalc = null;
+
+    async function logout() { await sb.auth.signOut(); window.location.href = '../../index.html'; }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    function populateMonths() {
+      const select = document.getElementById('monthSelect');
+      const now = new Date();
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const value = d.toISOString().slice(0, 7);
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        select.innerHTML += `<option value="${value}">${label}</option>`;
+      }
+    }
+
+    async function loadMonthData() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADMIN') { window.location.href = '../../index.html'; return; }
+      currentUser = userData;
+
+      const month = document.getElementById('monthSelect').value;
+      const [year, mon] = month.split('-').map(Number);
+      const firstDay = month + '-01';
+      const lastDay = new Date(year, mon, 0).toISOString().split('T')[0]; // mon is already 1-12, so this gives last day
+
+      // Get payments
+      const { data: payments } = await sb.from('project_payments').select('amount').gte('payment_date', firstDay).lte('payment_date', lastDay);
+      const totalIncome = (payments || []).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      // Get expenses
+      const { data: expenses } = await sb.from('project_expenses').select('amount').gte('expense_date', firstDay).lte('expense_date', lastDay);
+      const totalExpense = (expenses || []).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+
+      const netProfit = totalIncome - totalExpense;
+
+      document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+      document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+      document.getElementById('netProfit').textContent = formatCurrency(netProfit);
+      document.getElementById('netProfit').style.color = netProfit >= 0 ? '#2563eb' : '#ef4444';
+
+      // Distribution (only if profit > 0)
+      const founderAmt = netProfit > 0 ? netProfit * 0.30 : 0;
+      const advisorAmt = netProfit > 0 ? netProfit * 0.15 : 0;
+      const fundAmt = netProfit > 0 ? netProfit * 0.15 : 0;
+      const teamAmt = netProfit > 0 ? netProfit * 0.40 : 0;
+
+      document.getElementById('founderAmount').textContent = formatCurrency(founderAmt);
+      document.getElementById('advisorAmount').textContent = formatCurrency(advisorAmt);
+      document.getElementById('fundAmount').textContent = formatCurrency(fundAmt);
+      document.getElementById('teamAmount').textContent = formatCurrency(teamAmt);
+
+      // Get active team members
+      const { data: members } = await sb.from('users').select('*').eq('role', 'MEMBER').eq('status', 'ACTIVE');
+      const teamCount = (members || []).length;
+      const perMember = teamCount > 0 ? teamAmt / teamCount : 0;
+
+      document.getElementById('teamCount').textContent = teamCount;
+      document.getElementById('perMember').textContent = formatCurrency(perMember);
+
+      // Check if calculation exists
+      const { data: calc } = await sb.from('monthly_calculations').select('*').eq('month', month).single();
+      currentCalc = calc;
+
+      if (calc) {
+        document.getElementById('monthStatus').textContent = calc.locked ? 'LOCKED' : 'Calculated';
+        document.getElementById('lockedBanner').style.display = calc.locked ? 'flex' : 'none';
+        document.getElementById('unlockedBanner').style.display = calc.locked ? 'none' : 'flex';
+      } else {
+        document.getElementById('monthStatus').textContent = 'Not Calculated';
+        document.getElementById('lockedBanner').style.display = 'none';
+        document.getElementById('unlockedBanner').style.display = 'none';
+      }
+
+      loadHistory();
+    }
+
+    async function calculateMonth() {
+      const month = document.getElementById('monthSelect').value;
+      const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
+      const totalExpense = parseFloat(document.getElementById('totalExpense').textContent.replace(/[^0-9.-]/g, '')) || 0;
+      const netProfit = totalIncome - totalExpense;
+
+      const calcData = {
+        month: month,
+        total_income: totalIncome,
+        total_expense: totalExpense,
+        net_profit: netProfit,
+        locked: false,
+        calculated_at: new Date().toISOString()
+      };
+
+      let result;
+      if (currentCalc) {
+        result = await sb.from('monthly_calculations').update(calcData).eq('id', currentCalc.id);
+      } else {
+        result = await sb.from('monthly_calculations').insert(calcData);
+      }
+
+      if (result.error) {
+        alert('Error: ' + result.error.message);
+      } else {
+        // Save distribution
+        const distributions = [
+          { month, role: 'Founder', percentage: 30, amount: netProfit > 0 ? netProfit * 0.30 : 0 },
+          { month, role: 'Advisor', percentage: 15, amount: netProfit > 0 ? netProfit * 0.15 : 0 },
+          { month, role: 'Company', percentage: 15, amount: netProfit > 0 ? netProfit * 0.15 : 0 },
+          { month, role: 'Team', percentage: 40, amount: netProfit > 0 ? netProfit * 0.40 : 0 }
+        ];
+
+        await sb.from('profit_distribution').delete().eq('month', month);
+        await sb.from('profit_distribution').insert(distributions);
+
+        alert('Calculation saved!');
+        loadMonthData();
+      }
+    }
+
+    async function generatePayouts() {
+      const month = document.getElementById('monthSelect').value;
+      const netProfit = parseFloat(document.getElementById('netProfit').textContent.replace(/[^0-9.-]/g, '')) || 0;
+
+      if (netProfit <= 0) {
+        alert('Cannot generate payouts - Net profit is zero or negative');
+        return;
+      }
+
+      // Check if payouts already exist for this month
+      const { data: existingPayouts } = await sb.from('member_payouts').select('id').eq('month', month);
+      if (existingPayouts && existingPayouts.length > 0) {
+        if (!confirm('Payouts already exist for this month. Delete and regenerate?')) {
+          return;
+        }
+      }
+
+      // Check if company fund already credited for this month
+      const { data: existingFund } = await sb.from('company_fund').select('id').eq('reference_month', month).eq('type', 'Credit');
+
+      // Get all active users
+      const { data: users } = await sb.from('users').select('*').eq('status', 'ACTIVE');
+
+      const founder = (users || []).find(u => u.role === 'ADMIN');
+      const advisor = (users || []).find(u => u.role === 'ADVISOR');
+      const members = (users || []).filter(u => u.role === 'MEMBER');
+
+      const founderAmt = netProfit * 0.30;
+      const advisorAmt = netProfit * 0.15;
+      const fundAmt = netProfit * 0.15;
+      const teamAmt = netProfit * 0.40;
+      const perMember = members.length > 0 ? teamAmt / members.length : 0;
+
+      // Delete existing payouts for this month
+      await sb.from('member_payouts').delete().eq('month', month);
+
+      // Delete existing company fund entry for this month (to avoid duplicates)
+      if (existingFund && existingFund.length > 0) {
+        await sb.from('company_fund').delete().eq('reference_month', month).eq('type', 'Credit').eq('reason', 'Monthly profit share - ' + month);
+      }
+
+      // Create payouts
+      const payouts = [];
+      if (founder) payouts.push({ user_id: founder.id, month, amount: founderAmt, status: 'Pending' });
+      if (advisor) payouts.push({ user_id: advisor.id, month, amount: advisorAmt, status: 'Pending' });
+      members.forEach(m => payouts.push({ user_id: m.id, month, amount: perMember, status: 'Pending' }));
+
+      if (payouts.length > 0) {
+        const { error } = await sb.from('member_payouts').insert(payouts);
+        if (error) {
+          alert('Error: ' + error.message);
+        } else {
+          // Add to company fund
+          await sb.from('company_fund').insert({
+            type: 'Credit',
+            amount: fundAmt,
+            reason: 'Monthly profit share - ' + month,
+            reference_month: month,
+            entry_date: new Date().toISOString().split('T')[0],
+            created_by: currentUser.id
+          });
+
+          alert('Payouts generated! Company fund credited.');
+          window.location.href = 'payouts.html';
+        }
+      }
+    }
+
+    async function toggleLock() {
+      if (!currentCalc) return;
+      const newLocked = !currentCalc.locked;
+      const { error } = await sb.from('monthly_calculations').update({
+        locked: newLocked,
+        locked_by: newLocked ? currentUser.id : null,
+        locked_at: newLocked ? new Date().toISOString() : null
+      }).eq('id', currentCalc.id);
+
+      if (error) alert('Error: ' + error.message);
+      else loadMonthData();
+    }
+
+    async function loadHistory() {
+      const { data: history } = await sb.from('monthly_calculations').select('*').order('month', { ascending: false }).limit(12);
+
+      const tbody = document.getElementById('historyTable');
+      if (!history || history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#666;">No calculations yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = history.map(h => {
+        const monthLabel = new Date(h.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return `
+          <tr>
+            <td>${monthLabel}</td>
+            <td style="color:#10b981;">${formatCurrency(h.total_income)}</td>
+            <td style="color:#ef4444;">${formatCurrency(h.total_expense)}</td>
+            <td style="color:${h.net_profit >= 0 ? '#2563eb' : '#ef4444'}; font-weight:600;">${formatCurrency(h.net_profit)}</td>
+            <td><span class="badge badge-${h.locked ? 'warning' : 'success'}">${h.locked ? '🔒 Locked' : '🔓 Open'}</span></td>
+            <td>${new Date(h.calculated_at).toLocaleDateString()}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    populateMonths();
+    loadMonthData();
+  </script>
+</body>
+</html>

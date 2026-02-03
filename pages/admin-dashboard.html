@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Admin Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; }
+    .nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .nav h2 { color: #2563eb; }
+    .nav button { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .stat-card .label { color: #666; font-size: 14px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: bold; color: #2563eb; }
+    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card h3 { margin-bottom: 20px; color: #333; }
+    .menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .menu a { display: block; padding: 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold; }
+    .menu a:hover { background: #1d4ed8; }
+    .menu a.secondary { background: #6b7280; }
+    .menu a.secondary:hover { background: #4b5563; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9f9f9; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .badge-open { background: #dbeafe; color: #1e40af; }
+    .badge-closed { background: #d1fae5; color: #065f46; }
+    @media (max-width: 768px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .menu { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h2>CRAKS Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">Total Income This Month</div>
+        <div class="value" id="statIncome">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Expenses This Month</div>
+        <div class="value" id="statExpenses">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Net Profit This Month</div>
+        <div class="value" id="statProfit">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Projects This Month</div>
+        <div class="value" id="statProjects">Loading...</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+      <div class="card">
+        <h3>Recent Projects</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Project</th>
+              <th>Payment</th>
+              <th>Expenses</th>
+              <th>Profit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTable">
+            <tr><td colspan="6" style="text-align:center">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Quick Actions</h3>
+        <div class="menu">
+          <a href="add-project.html">+ Add Project</a>
+          <a href="manage-users.html" class="secondary">Manage Users</a>
+          <a href="monthly-payout.html" class="secondary">Monthly Payouts</a>
+          <a href="company-fund.html" class="secondary">Company Fund</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = '../index.html';
+    }
+
+    async function loadDashboard() {
+      // Get current month date range
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+      // Get projects this month
+      const { data: projects, error } = await sb
+        .from('projects')
+        .select('*')
+        .gte('project_date', firstDay)
+        .lte('project_date', lastDay)
+        .order('project_date', { ascending: false });
+
+      if (error) {
+        console.error('Error loading projects:', error);
+        return;
+      }
+
+      // Calculate stats
+      let totalIncome = 0;
+      let totalExpenses = 0;
+
+      (projects || []).forEach(p => {
+        totalIncome += parseFloat(p.total_payment) || 0;
+        totalExpenses += parseFloat(p.total_expenses) || 0;
+      });
+
+      const netProfit = totalIncome - totalExpenses;
+
+      document.getElementById('statIncome').textContent = 'LKR ' + totalIncome.toFixed(2);
+      document.getElementById('statExpenses').textContent = 'LKR ' + totalExpenses.toFixed(2);
+      document.getElementById('statProfit').textContent = 'LKR ' + netProfit.toFixed(2);
+      document.getElementById('statProfit').style.color = netProfit >= 0 ? '#10b981' : '#ef4444';
+      document.getElementById('statProjects').textContent = (projects || []).length;
+
+      // Load recent projects table
+      const tbody = document.getElementById('projectsTable');
+      if (!projects || projects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No projects this month</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = projects.slice(0, 10).map(p => {
+        const profit = (parseFloat(p.total_payment) || 0) - (parseFloat(p.total_expenses) || 0);
+        return `
+          <tr>
+            <td>${p.client_name}</td>
+            <td>${p.project_name || '-'}</td>
+            <td>LKR ${(p.total_payment || 0).toFixed(2)}</td>
+            <td>LKR ${(p.total_expenses || 0).toFixed(2)}</td>
+            <td style="color: ${profit >= 0 ? '#10b981' : '#ef4444'}">LKR ${profit.toFixed(2)}</td>
+            <td><span class="badge badge-${p.status}">${p.status}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Check auth on page load
+    (async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = '../index.html';
+        return;
+      }
+      loadDashboard();
+    })();
+  </script>
+</body>
+</html>

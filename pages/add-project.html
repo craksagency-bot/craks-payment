@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Add Project</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; }
+    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+    .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h1 { color: #2563eb; margin-bottom: 20px; }
+    h3 { margin-bottom: 15px; color: #333; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 8px 16px; font-size: 12px; }
+    .actions { display: flex; gap: 10px; margin-top: 20px; }
+    .nav { background: white; padding: 15px 30px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .nav h2 { color: #2563eb; }
+    .nav a { color: #2563eb; text-decoration: none; }
+    .expense-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; padding: 15px; background: #f9f9f9; border-radius: 5px; margin-bottom: 10px; align-items: end; }
+    .totals { background: #e0f2fe; padding: 20px; border-radius: 5px; margin-top: 20px; }
+    .totals p { display: flex; justify-content: space-between; padding: 10px 0; font-size: 16px; }
+    .totals p.profit { font-weight: bold; font-size: 18px; border-top: 2px solid #2563eb; margin-top: 10px; padding-top: 15px; }
+    .error { background: #fee; color: #c00; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; }
+    .success { background: #efe; color: #080; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; }
+    @media (max-width: 600px) {
+      .form-row, .expense-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h2>CRAKS</h2>
+    <a href="admin-dashboard.html">← Back to Dashboard</a>
+  </div>
+
+  <div class="container">
+    <div id="error" class="error"></div>
+    <div id="success" class="success"></div>
+
+    <div class="card">
+      <h1>Add New Project</h1>
+
+      <form id="projectForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client Name *</label>
+            <input type="text" id="clientName" required placeholder="Enter client name">
+          </div>
+          <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="projectName" placeholder="Enter project name">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Project Date *</label>
+            <input type="date" id="projectDate" required>
+          </div>
+          <div class="form-group">
+            <label>Total Payment (LKR) *</label>
+            <input type="number" id="totalPayment" required min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+
+        <h3>Expenses</h3>
+        <div id="expensesList"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addExpense()">+ Add Expense</button>
+
+        <div class="totals">
+          <p><span>Total Payment:</span> <span id="displayPayment">LKR 0.00</span></p>
+          <p><span>Total Expenses:</span> <span id="displayExpenses">LKR 0.00</span></p>
+          <p class="profit"><span>Net Profit:</span> <span id="displayProfit">LKR 0.00</span></p>
+        </div>
+
+        <div class="actions">
+          <a href="admin-dashboard.html" class="btn btn-outline">Cancel</a>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    let expenseCount = 0;
+
+    function addExpense() {
+      expenseCount++;
+      const div = document.createElement('div');
+      div.className = 'expense-row';
+      div.id = 'expense-' + expenseCount;
+      div.innerHTML = `
+        <div class="form-group" style="margin-bottom:0">
+          <label>Category</label>
+          <select class="exp-category">
+            <option value="equipment">Equipment</option>
+            <option value="transport">Transport</option>
+            <option value="freelancer">Freelancer</option>
+            <option value="software">Software</option>
+            <option value="props">Props</option>
+            <option value="ads">Ads</option>
+            <option value="marketing">Marketing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Amount (LKR)</label>
+          <input type="number" class="exp-amount" min="0" step="0.01" placeholder="0.00" onchange="calculateTotals()" oninput="calculateTotals()">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Description</label>
+          <input type="text" class="exp-desc" placeholder="Description">
+        </div>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeExpense(${expenseCount})">X</button>
+      `;
+      document.getElementById('expensesList').appendChild(div);
+    }
+
+    function removeExpense(id) {
+      document.getElementById('expense-' + id).remove();
+      calculateTotals();
+    }
+
+    function calculateTotals() {
+      const payment = parseFloat(document.getElementById('totalPayment').value) || 0;
+      let expenses = 0;
+      document.querySelectorAll('.exp-amount').forEach(el => {
+        expenses += parseFloat(el.value) || 0;
+      });
+      const profit = payment - expenses;
+
+      document.getElementById('displayPayment').textContent = 'LKR ' + payment.toFixed(2);
+      document.getElementById('displayExpenses').textContent = 'LKR ' + expenses.toFixed(2);
+      document.getElementById('displayProfit').textContent = 'LKR ' + profit.toFixed(2);
+      document.getElementById('displayProfit').style.color = profit >= 0 ? '#080' : '#c00';
+    }
+
+    document.getElementById('totalPayment').addEventListener('input', calculateTotals);
+
+    document.getElementById('projectForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const saveBtn = document.getElementById('saveBtn');
+      const errorDiv = document.getElementById('error');
+      const successDiv = document.getElementById('success');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      const clientName = document.getElementById('clientName').value;
+      const projectName = document.getElementById('projectName').value;
+      const projectDate = document.getElementById('projectDate').value;
+      const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
+
+      let totalExpenses = 0;
+      document.querySelectorAll('.exp-amount').forEach(el => {
+        totalExpenses += parseFloat(el.value) || 0;
+      });
+
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) {
+          window.location.href = '../index.html';
+          return;
+        }
+
+        const { data: project, error: projectError } = await sb
+          .from('projects')
+          .insert({
+            client_name: clientName,
+            project_name: projectName,
+            project_date: projectDate,
+            total_payment: totalPayment,
+            total_expenses: totalExpenses,
+            status: 'open',
+            created_by: user.id
+          })
+          .select()
+          .single();
+
+        if (projectError) throw projectError;
+
+        const expenseRows = document.querySelectorAll('.expense-row');
+        for (const row of expenseRows) {
+          const category = row.querySelector('.exp-category').value;
+          const amount = parseFloat(row.querySelector('.exp-amount').value) || 0;
+          const description = row.querySelector('.exp-desc').value;
+
+          if (amount > 0) {
+            await sb.from('expenses').insert({
+              project_id: project.id,
+              category: category,
+              amount: amount,
+              description: description,
+              expense_date: projectDate
+            });
+          }
+        }
+
+        successDiv.textContent = 'Project saved successfully!';
+        successDiv.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'admin-dashboard.html';
+        }, 1500);
+
+      } catch (err) {
+        errorDiv.textContent = 'Error: ' + err.message;
+        errorDiv.style.display = 'block';
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Project';
+      }
+    });
+
+    document.getElementById('projectDate').valueAsDate = new Date();
+  </script>
+</body>
+</html>

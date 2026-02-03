@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - All Projects</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; transition: transform 0.3s ease; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .sidebar-header p { font-size: 12px; opacity: 0.7; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #2563eb; }
+    .nav-item i { width: 20px; margin-right: 12px; text-align: center; }
+    .nav-section { padding: 10px 20px 5px; font-size: 11px; text-transform: uppercase; opacity: 0.5; margin-top: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .btn-logout:hover { background: #ef4444; color: white; }
+    .main-content { margin-left: 260px; padding: 20px; min-height: 100vh; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .card-header h3 { font-size: 18px; color: #1a1a2e; }
+    .card-body { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 13px; }
+    tr:hover { background: #f9fafb; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+    .filters select, .filters input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .mobile-header { display: none; background: #1a1a2e; color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 999; }
+    .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding-top: 70px; }
+      .mobile-header { display: flex; justify-content: space-between; align-items: center; }
+      .overlay.show { display: block; }
+      .filters { flex-direction: column; align-items: stretch; }
+      th, td { padding: 8px; font-size: 13px; }
+    }
+    .profit-positive { color: #10b981; font-weight: 600; }
+    .profit-negative { color: #ef4444; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <span>All Projects</span>
+    <div></div>
+  </div>
+  <div class="overlay" onclick="toggleSidebar()"></div>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>CRAKS</h2>
+      <p>Payment Management</p>
+    </div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <div class="nav-section">Projects</div>
+      <a href="projects.html" class="nav-item active"><i>📁</i> All Projects</a>
+      <a href="add-project.html" class="nav-item"><i>➕</i> Add Project</a>
+      <div class="nav-section">Finance</div>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="monthly-calc.html" class="nav-item"><i>📈</i> Monthly Calculation</a>
+      <div class="nav-section">Payouts</div>
+      <a href="payouts.html" class="nav-item"><i>💸</i> Member Payouts</a>
+      <a href="company-fund.html" class="nav-item"><i>🏦</i> Company Fund</a>
+      <div class="nav-section">Management</div>
+      <a href="users.html" class="nav-item"><i>👥</i> Users</a>
+      <a href="bank-details.html" class="nav-item"><i>🏧</i> Bank Details</a>
+      <a href="audit-logs.html" class="nav-item"><i>📋</i> Audit Logs</a>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>All Projects</h1>
+      <a href="add-project.html" class="btn btn-primary">+ New Project</a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Project List</h3>
+        <div class="filters">
+          <select id="filterStatus" onchange="loadProjects()">
+            <option value="">All Status</option>
+            <option value="OPEN">Open</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+          <select id="filterCategory" onchange="loadProjects()">
+            <option value="">All Categories</option>
+            <option value="Media">Media</option>
+            <option value="Photo">Photo</option>
+            <option value="Video">Video</option>
+            <option value="Web">Web</option>
+            <option value="Design">Design</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Search..." onkeyup="loadProjects()">
+        </div>
+      </div>
+      <div class="card-body" style="padding:0; overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Project Name</th>
+              <th>Client</th>
+              <th>Category</th>
+              <th>Payments</th>
+              <th>Expenses</th>
+              <th>Profit</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTable">
+            <tr><td colspan="9" style="text-align:center; padding:30px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="totalsSummary" class="card" style="display:none;">
+      <div class="card-body" style="display: flex; gap: 30px; flex-wrap: wrap;">
+        <div><strong>Total Projects:</strong> <span id="totalProjects">0</span></div>
+        <div><strong>Total Payments:</strong> <span id="totalPayments">LKR 0</span></div>
+        <div><strong>Total Expenses:</strong> <span id="totalExpenses">LKR 0</span></div>
+        <div><strong>Total Profit:</strong> <span id="totalProfit">LKR 0</span></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.querySelector('.overlay').classList.toggle('show');
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = '../../index.html';
+    }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    async function loadProjects() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const status = document.getElementById('filterStatus').value;
+      const category = document.getElementById('filterCategory').value;
+      const search = document.getElementById('searchInput').value.toLowerCase();
+
+      let query = sb.from('projects').select('*').order('project_date', { ascending: false });
+      if (status) query = query.eq('status', status);
+      if (category) query = query.eq('category', category);
+
+      const { data: projects, error } = await query;
+
+      if (error) {
+        alert('Error: ' + error.message);
+        return;
+      }
+
+      // Get all payments and expenses
+      const { data: payments } = await sb.from('project_payments').select('project_id, amount');
+      const { data: expenses } = await sb.from('project_expenses').select('project_id, amount');
+
+      // Create lookup maps
+      const paymentMap = {};
+      const expenseMap = {};
+      (payments || []).forEach(p => {
+        paymentMap[p.project_id] = (paymentMap[p.project_id] || 0) + parseFloat(p.amount);
+      });
+      (expenses || []).forEach(e => {
+        expenseMap[e.project_id] = (expenseMap[e.project_id] || 0) + parseFloat(e.amount);
+      });
+
+      // Filter by search
+      let filtered = (projects || []).filter(p => {
+        if (!search) return true;
+        return p.project_name.toLowerCase().includes(search) ||
+               p.client_name.toLowerCase().includes(search);
+      });
+
+      const tbody = document.getElementById('projectsTable');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#666;">No projects found</td></tr>';
+        document.getElementById('totalsSummary').style.display = 'none';
+        return;
+      }
+
+      let totalPay = 0, totalExp = 0;
+
+      tbody.innerHTML = filtered.map(p => {
+        const pay = paymentMap[p.id] || 0;
+        const exp = expenseMap[p.id] || 0;
+        const profit = pay - exp;
+        totalPay += pay;
+        totalExp += exp;
+
+        return `
+          <tr>
+            <td>${p.project_date}</td>
+            <td><strong>${p.project_name}</strong></td>
+            <td>${p.client_name}</td>
+            <td>${p.category}</td>
+            <td>${formatCurrency(pay)}</td>
+            <td>${formatCurrency(exp)}</td>
+            <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(profit)}</td>
+            <td><span class="badge badge-${p.status === 'OPEN' ? 'info' : 'success'}">${p.status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="viewProject('${p.id}')">View</button>
+              <button class="btn btn-sm btn-${p.status === 'OPEN' ? 'success' : 'warning'}" onclick="toggleStatus('${p.id}', '${p.status}')">${p.status === 'OPEN' ? 'Close' : 'Reopen'}</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Show totals
+      document.getElementById('totalsSummary').style.display = 'block';
+      document.getElementById('totalProjects').textContent = filtered.length;
+      document.getElementById('totalPayments').textContent = formatCurrency(totalPay);
+      document.getElementById('totalExpenses').textContent = formatCurrency(totalExp);
+      document.getElementById('totalProfit').textContent = formatCurrency(totalPay - totalExp);
+      document.getElementById('totalProfit').style.color = (totalPay - totalExp) >= 0 ? '#10b981' : '#ef4444';
+    }
+
+    function viewProject(id) {
+      window.location.href = 'project-detail.html?id=' + id;
+    }
+
+    async function toggleStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'OPEN' ? 'CLOSED' : 'OPEN';
+      const { error } = await sb.from('projects').update({ status: newStatus }).eq('id', id);
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        loadProjects();
+      }
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>

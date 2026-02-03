@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Monthly Payouts</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; }
+    .nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .nav h2 { color: #2563eb; }
+    .nav a { color: #2563eb; text-decoration: none; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h3 { margin-bottom: 15px; color: #333; }
+    .month-selector { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9f9f9; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-paid { background: #d1fae5; color: #065f46; }
+    .summary-box { background: #e0f2fe; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bae6fd; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row.total { font-weight: bold; font-size: 18px; background: #2563eb; color: white; margin: -20px -20px 15px -20px; padding: 15px 20px; border-radius: 10px 10px 0 0; }
+    .dist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 15px 0; }
+    .dist-item { background: white; padding: 15px; border-radius: 8px; text-align: center; }
+    .dist-label { font-size: 12px; color: #666; }
+    .dist-percent { font-size: 14px; color: #2563eb; font-weight: bold; }
+    .dist-value { font-size: 18px; font-weight: bold; margin-top: 5px; }
+    .error { background: #fee; color: #c00; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; }
+    .success { background: #efe; color: #080; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; }
+    @media (max-width: 768px) {
+      .dist-grid { grid-template-columns: repeat(2, 1fr); }
+      .month-selector { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h2>CRAKS</h2>
+    <a href="admin-dashboard.html">← Back to Dashboard</a>
+  </div>
+
+  <div class="container">
+    <div id="error" class="error"></div>
+    <div id="success" class="success"></div>
+
+    <div class="card">
+      <h3>Monthly Payouts</h3>
+      <div class="month-selector">
+        <label><strong>Select Month:</strong></label>
+        <select id="monthSelect"></select>
+        <button class="btn btn-primary" onclick="generatePayouts()">Calculate Payouts</button>
+      </div>
+    </div>
+
+    <div class="summary-box" id="summaryBox" style="display:none;">
+      <div class="summary-row total">
+        <span>Total Net Profit</span>
+        <span id="totalProfit">LKR 0.00</span>
+      </div>
+      <div class="dist-grid">
+        <div class="dist-item">
+          <div class="dist-label">Founder (Ishaq)</div>
+          <div class="dist-percent">30%</div>
+          <div class="dist-value" id="founderAmt">LKR 0.00</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-label">Chief Advisor</div>
+          <div class="dist-percent">15%</div>
+          <div class="dist-value" id="advisorAmt">LKR 0.00</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-label">Company Fund</div>
+          <div class="dist-percent">15%</div>
+          <div class="dist-value" id="fundAmt">LKR 0.00</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-label">Team Pool</div>
+          <div class="dist-percent">40%</div>
+          <div class="dist-value" id="teamPoolAmt">LKR 0.00</div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <span>Active Team Members</span>
+        <span id="teamCount">0</span>
+      </div>
+      <div class="summary-row">
+        <span>Per Member Amount</span>
+        <span id="perMemberAmt">LKR 0.00</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Individual Payouts</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="payoutsTable">
+          <tr><td colspan="5" style="text-align:center">Select a month to calculate payouts</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
+
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+      successDiv.style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      successDiv.textContent = msg;
+      successDiv.style.display = 'block';
+      errorDiv.style.display = 'none';
+    }
+
+    // Populate month dropdown (last 6 months)
+    function populateMonths() {
+      const select = document.getElementById('monthSelect');
+      const now = new Date();
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const value = d.toISOString().slice(0, 7);
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        select.innerHTML += `<option value="${value}">${label}</option>`;
+      }
+    }
+
+    async function generatePayouts() {
+      const month = document.getElementById('monthSelect').value;
+      const [year, mon] = month.split('-');
+      const firstDay = `${month}-01`;
+      const lastDay = new Date(year, mon, 0).toISOString().split('T')[0];
+
+      // Get projects for this month
+      const { data: projects, error: projErr } = await sb
+        .from('projects')
+        .select('*')
+        .gte('project_date', firstDay)
+        .lte('project_date', lastDay);
+
+      if (projErr) {
+        showError('Error loading projects: ' + projErr.message);
+        return;
+      }
+
+      // Calculate totals
+      let totalPayment = 0;
+      let totalExpenses = 0;
+      (projects || []).forEach(p => {
+        totalPayment += parseFloat(p.total_payment) || 0;
+        totalExpenses += parseFloat(p.total_expenses) || 0;
+      });
+
+      const netProfit = totalPayment - totalExpenses;
+
+      // Distribution
+      const founderShare = netProfit * 0.30;
+      const advisorShare = netProfit * 0.15;
+      const fundShare = netProfit * 0.15;
+      const teamPool = netProfit * 0.40;
+
+      // Get active team members
+      const { data: users, error: userErr } = await sb
+        .from('users')
+        .select('*')
+        .eq('active', true);
+
+      if (userErr) {
+        showError('Error loading users: ' + userErr.message);
+        return;
+      }
+
+      const teamMembers = (users || []).filter(u => u.role === 'team');
+      const perMember = teamMembers.length > 0 ? teamPool / teamMembers.length : 0;
+
+      // Show summary
+      document.getElementById('summaryBox').style.display = 'block';
+      document.getElementById('totalProfit').textContent = 'LKR ' + netProfit.toFixed(2);
+      document.getElementById('founderAmt').textContent = 'LKR ' + founderShare.toFixed(2);
+      document.getElementById('advisorAmt').textContent = 'LKR ' + advisorShare.toFixed(2);
+      document.getElementById('fundAmt').textContent = 'LKR ' + fundShare.toFixed(2);
+      document.getElementById('teamPoolAmt').textContent = 'LKR ' + teamPool.toFixed(2);
+      document.getElementById('teamCount').textContent = teamMembers.length;
+      document.getElementById('perMemberAmt').textContent = 'LKR ' + perMember.toFixed(2);
+
+      // Build payouts table
+      const tbody = document.getElementById('payoutsTable');
+      let rows = '';
+
+      // Get existing payouts for this month
+      const { data: existingPayouts } = await sb
+        .from('payouts')
+        .select('*')
+        .eq('payout_month', month);
+
+      const paidMap = {};
+      (existingPayouts || []).forEach(p => {
+        paidMap[p.user_id] = p;
+      });
+
+      // Add founder and advisor
+      const founder = (users || []).find(u => u.role === 'admin');
+      const advisor = (users || []).find(u => u.role === 'advisor');
+
+      if (founder) {
+        const paid = paidMap[founder.id];
+        rows += `<tr>
+          <td>${founder.full_name}</td>
+          <td>Founder (30%)</td>
+          <td>LKR ${founderShare.toFixed(2)}</td>
+          <td><span class="badge badge-${paid ? 'paid' : 'pending'}">${paid ? 'Paid' : 'Pending'}</span></td>
+          <td>${paid ? '-' : `<button class="btn btn-success btn-sm" onclick="markPaid('${founder.id}', ${founderShare}, '${month}')">Mark Paid</button>`}</td>
+        </tr>`;
+      }
+
+      if (advisor) {
+        const paid = paidMap[advisor.id];
+        rows += `<tr>
+          <td>${advisor.full_name}</td>
+          <td>Advisor (15%)</td>
+          <td>LKR ${advisorShare.toFixed(2)}</td>
+          <td><span class="badge badge-${paid ? 'paid' : 'pending'}">${paid ? 'Paid' : 'Pending'}</span></td>
+          <td>${paid ? '-' : `<button class="btn btn-success btn-sm" onclick="markPaid('${advisor.id}', ${advisorShare}, '${month}')">Mark Paid</button>`}</td>
+        </tr>`;
+      }
+
+      // Add team members
+      teamMembers.forEach(tm => {
+        const paid = paidMap[tm.id];
+        rows += `<tr>
+          <td>${tm.full_name}</td>
+          <td>Team Member</td>
+          <td>LKR ${perMember.toFixed(2)}</td>
+          <td><span class="badge badge-${paid ? 'paid' : 'pending'}">${paid ? 'Paid' : 'Pending'}</span></td>
+          <td>${paid ? '-' : `<button class="btn btn-success btn-sm" onclick="markPaid('${tm.id}', ${perMember}, '${month}')">Mark Paid</button>`}</td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = rows || '<tr><td colspan="5" style="text-align:center">No users found</td></tr>';
+    }
+
+    async function markPaid(userId, amount, month) {
+      const { error } = await sb.from('payouts').insert({
+        user_id: userId,
+        payout_month: month,
+        amount: amount,
+        status: 'paid',
+        paid_date: new Date().toISOString().split('T')[0]
+      });
+
+      if (error) {
+        showError('Error: ' + error.message);
+      } else {
+        showSuccess('Marked as paid!');
+        generatePayouts();
+      }
+    }
+
+    // Check auth
+    (async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = '../index.html';
+        return;
+      }
+      populateMonths();
+    })();
+  </script>
+</body>
+</html>

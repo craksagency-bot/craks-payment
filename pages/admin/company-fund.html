@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Company Fund</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #2563eb; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .nav-section { padding: 10px 20px 5px; font-size: 11px; text-transform: uppercase; opacity: 0.5; margin-top: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; }
+    .page-header { margin-bottom: 25px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; }
+    .card-body { padding: 25px; }
+    .balance-card { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; text-align: center; padding: 40px; border-radius: 16px; margin-bottom: 25px; }
+    .balance-card .label { font-size: 16px; opacity: 0.9; margin-bottom: 10px; }
+    .balance-card .value { font-size: 48px; font-weight: bold; }
+    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px; }
+    .stat-card { background: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .stat-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .stat-card .value { font-size: 24px; font-weight: bold; }
+    .stat-card.credit .value { color: #10b981; }
+    .stat-card.debit .value { color: #ef4444; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr auto; gap: 15px; align-items: end; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .credit { color: #10b981; font-weight: 600; }
+    .debit { color: #ef4444; font-weight: 600; }
+    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .form-row { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-header"><h2>CRAKS</h2></div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <div class="nav-section">Projects</div>
+      <a href="projects.html" class="nav-item"><i>📁</i> All Projects</a>
+      <a href="add-project.html" class="nav-item"><i>➕</i> Add Project</a>
+      <div class="nav-section">Finance</div>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="monthly-calc.html" class="nav-item"><i>📈</i> Monthly Calculation</a>
+      <div class="nav-section">Payouts</div>
+      <a href="payouts.html" class="nav-item"><i>💸</i> Member Payouts</a>
+      <a href="company-fund.html" class="nav-item active"><i>🏦</i> Company Fund</a>
+      <div class="nav-section">Management</div>
+      <a href="users.html" class="nav-item"><i>👥</i> Users</a>
+      <a href="bank-details.html" class="nav-item"><i>🏧</i> Bank Details</a>
+      <a href="audit-logs.html" class="nav-item"><i>📋</i> Audit Logs</a>
+    </div>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header"><h1>🏦 Company Fund</h1></div>
+
+    <div class="balance-card">
+      <div class="label">Current Fund Balance</div>
+      <div class="value" id="fundBalance">LKR 0.00</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card credit">
+        <div class="label">Total Credits</div>
+        <div class="value" id="totalCredits">LKR 0</div>
+      </div>
+      <div class="stat-card debit">
+        <div class="label">Total Debits</div>
+        <div class="value" id="totalDebits">LKR 0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Add Transaction</h3></div>
+      <div class="card-body">
+        <form id="fundForm" class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="txnType" required>
+              <option value="Credit">Credit (+)</option>
+              <option value="Debit">Debit (-)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (LKR)</label>
+            <input type="number" id="txnAmount" required min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Reason</label>
+            <input type="text" id="txnReason" required placeholder="e.g., Rent, Software, Equipment">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="txnDate" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Transaction History</h3></div>
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Balance</th><th>Reason</th><th>Action</th></tr></thead>
+          <tbody id="fundTable"><tr><td colspan="6" style="text-align:center; padding:30px;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    let currentUser = null;
+
+    async function logout() { await sb.auth.signOut(); window.location.href = '../../index.html'; }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    async function loadFund() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADMIN') { window.location.href = '../../index.html'; return; }
+      currentUser = userData;
+
+      document.getElementById('txnDate').valueAsDate = new Date();
+
+      const { data: txns, error } = await sb.from('company_fund').select('*').order('entry_date', { ascending: false }).order('created_at', { ascending: false });
+
+      if (error) { alert('Error: ' + error.message); return; }
+
+      let balance = 0, credits = 0, debits = 0;
+      (txns || []).forEach(t => {
+        if (t.type === 'Credit') {
+          balance += parseFloat(t.amount);
+          credits += parseFloat(t.amount);
+        } else {
+          balance -= parseFloat(t.amount);
+          debits += parseFloat(t.amount);
+        }
+      });
+
+      document.getElementById('fundBalance').textContent = formatCurrency(balance);
+      document.getElementById('totalCredits').textContent = formatCurrency(credits);
+      document.getElementById('totalDebits').textContent = formatCurrency(debits);
+
+      // Calculate running balance
+      let runningBalance = 0;
+      const withBalance = (txns || []).slice().reverse().map(t => {
+        runningBalance += t.type === 'Credit' ? parseFloat(t.amount) : -parseFloat(t.amount);
+        return { ...t, balance: runningBalance };
+      }).reverse();
+
+      const tbody = document.getElementById('fundTable');
+      if (!withBalance || withBalance.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#666;">No transactions yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = withBalance.map(t => `
+        <tr>
+          <td>${t.entry_date}</td>
+          <td class="${t.type.toLowerCase()}">${t.type === 'Credit' ? '+ Credit' : '- Debit'}</td>
+          <td class="${t.type.toLowerCase()}">${formatCurrency(t.amount)}</td>
+          <td>${formatCurrency(t.balance)}</td>
+          <td>${t.reason}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="deleteTxn('${t.id}')">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('fundForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const { error } = await sb.from('company_fund').insert({
+        type: document.getElementById('txnType').value,
+        amount: parseFloat(document.getElementById('txnAmount').value),
+        reason: document.getElementById('txnReason').value,
+        entry_date: document.getElementById('txnDate').value,
+        created_by: currentUser.id
+      });
+
+      if (error) alert('Error: ' + error.message);
+      else {
+        document.getElementById('txnAmount').value = '';
+        document.getElementById('txnReason').value = '';
+        loadFund();
+      }
+    });
+
+    async function deleteTxn(id) {
+      if (!confirm('Delete this transaction?')) return;
+      await sb.from('company_fund').delete().eq('id', id);
+      loadFund();
+    }
+
+    loadFund();
+  </script>
+</body>
+</html>

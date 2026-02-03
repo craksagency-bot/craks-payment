@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Bank Details</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #2563eb; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .nav-section { padding: 10px 20px 5px; font-size: 11px; text-transform: uppercase; opacity: 0.5; margin-top: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .card-body { padding: 25px; }
+    .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .error { background: #fee2e2; color: #dc2626; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    .success { background: #d1fae5; color: #059669; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    .secure-badge { background: #fef3c7; color: #92400e; padding: 8px 15px; border-radius: 8px; font-size: 13px; }
+    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-header"><h2>CRAKS</h2></div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <div class="nav-section">Projects</div>
+      <a href="projects.html" class="nav-item"><i>📁</i> All Projects</a>
+      <a href="add-project.html" class="nav-item"><i>➕</i> Add Project</a>
+      <div class="nav-section">Finance</div>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="monthly-calc.html" class="nav-item"><i>📈</i> Monthly Calculation</a>
+      <div class="nav-section">Payouts</div>
+      <a href="payouts.html" class="nav-item"><i>💸</i> Member Payouts</a>
+      <a href="company-fund.html" class="nav-item"><i>🏦</i> Company Fund</a>
+      <div class="nav-section">Management</div>
+      <a href="users.html" class="nav-item"><i>👥</i> Users</a>
+      <a href="bank-details.html" class="nav-item active"><i>🏧</i> Bank Details</a>
+      <a href="audit-logs.html" class="nav-item"><i>📋</i> Audit Logs</a>
+    </div>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>🏧 Bank Details</h1>
+      <span class="secure-badge">🔒 Admin Access Only</span>
+    </div>
+
+    <div id="error" class="error"></div>
+    <div id="success" class="success"></div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Add/Update Bank Details</h3>
+      </div>
+      <div class="card-body">
+        <form id="bankForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select User</label>
+              <select id="userId" required onchange="loadUserBank()">
+                <option value="">Select user...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Bank Name</label>
+              <input type="text" id="bankName" required placeholder="e.g., Commercial Bank">
+            </div>
+            <div class="form-group">
+              <label>Account Holder Name</label>
+              <input type="text" id="accountHolder" required placeholder="Full name on account">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Account Number</label>
+              <input type="text" id="accountNumber" required placeholder="Account number">
+            </div>
+            <div class="form-group">
+              <label>Branch Name</label>
+              <input type="text" id="branchName" placeholder="Branch name">
+            </div>
+            <div class="form-group">
+              <label>IFSC / SWIFT Code</label>
+              <input type="text" id="ifscSwift" placeholder="Optional">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Bank Details</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>All Bank Records</h3></div>
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>User</th><th>Bank</th><th>Account Holder</th><th>Account No.</th><th>Branch</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="bankTable">
+            <tr><td colspan="6" style="text-align:center; padding:30px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    let allUsers = [];
+    let editingId = null;
+
+    async function logout() { await sb.auth.signOut(); window.location.href = '../../index.html'; }
+
+    function showError(msg) {
+      document.getElementById('error').textContent = msg;
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('success').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      document.getElementById('success').textContent = msg;
+      document.getElementById('success').style.display = 'block';
+      document.getElementById('error').style.display = 'none';
+    }
+
+    async function loadData() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADMIN') { window.location.href = '../../index.html'; return; }
+
+      // Load users for dropdown
+      const { data: users } = await sb.from('users').select('*').order('name');
+      allUsers = users || [];
+
+      const select = document.getElementById('userId');
+      select.innerHTML = '<option value="">Select user...</option>' +
+        allUsers.map(u => `<option value="${u.id}">${u.name} (${u.role})</option>`).join('');
+
+      // Check URL params
+      const params = new URLSearchParams(window.location.search);
+      const preselect = params.get('user');
+      if (preselect) {
+        select.value = preselect;
+        loadUserBank();
+      }
+
+      loadBankRecords();
+    }
+
+    async function loadUserBank() {
+      const userId = document.getElementById('userId').value;
+      if (!userId) {
+        clearForm();
+        return;
+      }
+
+      const { data: bank } = await sb.from('user_bank_details').select('*').eq('user_id', userId).single();
+
+      if (bank) {
+        editingId = bank.id;
+        document.getElementById('bankName').value = bank.bank_name || '';
+        document.getElementById('accountHolder').value = bank.account_holder || '';
+        document.getElementById('accountNumber').value = bank.account_number || '';
+        document.getElementById('branchName').value = bank.branch_name || '';
+        document.getElementById('ifscSwift').value = bank.ifsc_swift || '';
+      } else {
+        clearForm();
+      }
+    }
+
+    function clearForm() {
+      editingId = null;
+      document.getElementById('bankName').value = '';
+      document.getElementById('accountHolder').value = '';
+      document.getElementById('accountNumber').value = '';
+      document.getElementById('branchName').value = '';
+      document.getElementById('ifscSwift').value = '';
+    }
+
+    async function loadBankRecords() {
+      const { data: banks, error } = await sb.from('user_bank_details').select('*, users(name, role)').order('created_at', { ascending: false });
+
+      if (error) { showError('Error: ' + error.message); return; }
+
+      const tbody = document.getElementById('bankTable');
+      if (!banks || banks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#666;">No bank records found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = banks.map(b => `
+        <tr>
+          <td><strong>${b.users?.name || 'Unknown'}</strong><br><small style="color:#666;">${b.users?.role || ''}</small></td>
+          <td>${b.bank_name}</td>
+          <td>${b.account_holder}</td>
+          <td>${b.account_number}</td>
+          <td>${b.branch_name || '-'}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="deleteBank('${b.id}')">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('bankForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const userId = document.getElementById('userId').value;
+      const bankData = {
+        user_id: userId,
+        bank_name: document.getElementById('bankName').value,
+        account_holder: document.getElementById('accountHolder').value,
+        account_number: document.getElementById('accountNumber').value,
+        branch_name: document.getElementById('branchName').value || null,
+        ifsc_swift: document.getElementById('ifscSwift').value || null
+      };
+
+      let result;
+      if (editingId) {
+        result = await sb.from('user_bank_details').update(bankData).eq('id', editingId);
+      } else {
+        result = await sb.from('user_bank_details').insert(bankData);
+      }
+
+      if (result.error) {
+        showError('Error: ' + result.error.message);
+      } else {
+        showSuccess('Bank details saved!');
+        clearForm();
+        document.getElementById('userId').value = '';
+        loadBankRecords();
+      }
+    });
+
+    async function deleteBank(id) {
+      if (!confirm('Delete this bank record?')) return;
+      await sb.from('user_bank_details').delete().eq('id', id);
+      loadBankRecords();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

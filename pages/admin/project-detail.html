@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Project Detail</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; transition: transform 0.3s ease; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #2563eb; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .nav-section { padding: 10px 20px 5px; font-size: 11px; text-transform: uppercase; opacity: 0.5; margin-top: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .card-header h3 { font-size: 18px; }
+    .card-body { padding: 20px; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .info-item label { font-size: 12px; color: #666; display: block; margin-bottom: 5px; }
+    .info-item .value { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-secondary { background: #6b7280; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+    .summary-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); text-align: center; }
+    .summary-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .summary-card .value { font-size: 28px; font-weight: bold; }
+    .summary-card.income .value { color: #10b981; }
+    .summary-card.expense .value { color: #ef4444; }
+    .summary-card.profit .value { color: #2563eb; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 15px; }
+    .form-group { margin-bottom: 0; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+    .mobile-header { display: none; }
+    .overlay { display: none; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding-top: 70px; }
+      .mobile-header { display: flex; justify-content: space-between; align-items: center; background: #1a1a2e; color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 999; }
+      .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+      .overlay.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
+      .summary-cards { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <span>Project Detail</span>
+    <div></div>
+  </div>
+  <div class="overlay" onclick="toggleSidebar()"></div>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h2>CRAKS</h2><p>Payment Management</p></div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <div class="nav-section">Projects</div>
+      <a href="projects.html" class="nav-item active"><i>📁</i> All Projects</a>
+      <a href="add-project.html" class="nav-item"><i>➕</i> Add Project</a>
+      <div class="nav-section">Finance</div>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="monthly-calc.html" class="nav-item"><i>📈</i> Monthly Calculation</a>
+      <div class="nav-section">Payouts</div>
+      <a href="payouts.html" class="nav-item"><i>💸</i> Member Payouts</a>
+      <a href="company-fund.html" class="nav-item"><i>🏦</i> Company Fund</a>
+      <div class="nav-section">Management</div>
+      <a href="users.html" class="nav-item"><i>👥</i> Users</a>
+      <a href="bank-details.html" class="nav-item"><i>🏧</i> Bank Details</a>
+      <a href="audit-logs.html" class="nav-item"><i>📋</i> Audit Logs</a>
+    </div>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 id="projectTitle">Loading...</h1>
+        <p style="color:#666; margin-top:5px;" id="projectClient"></p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="projects.html" class="btn btn-secondary">← Back</a>
+        <button class="btn btn-danger" onclick="deleteProject()">Delete</button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card income">
+        <div class="label">Total Payments</div>
+        <div class="value" id="totalPayments">LKR 0</div>
+      </div>
+      <div class="summary-card expense">
+        <div class="label">Total Expenses</div>
+        <div class="value" id="totalExpenses">LKR 0</div>
+      </div>
+      <div class="summary-card profit">
+        <div class="label">Net Profit</div>
+        <div class="value" id="netProfit">LKR 0</div>
+      </div>
+    </div>
+
+    <!-- Project Info -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Project Information</h3>
+        <span class="badge badge-info" id="projectStatus">OPEN</span>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-item"><label>Category</label><div class="value" id="projectCategory">-</div></div>
+          <div class="info-item"><label>Project Date</label><div class="value" id="projectDate">-</div></div>
+          <div class="info-item"><label>Created</label><div class="value" id="projectCreated">-</div></div>
+        </div>
+        <div style="margin-top:20px;" id="projectDescription"></div>
+      </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="card">
+      <div class="card-header">
+        <h3>💰 Payments</h3>
+      </div>
+      <div class="card-body">
+        <form id="paymentForm" class="form-row">
+          <div class="form-group">
+            <label>Amount (LKR)</label>
+            <input type="number" id="payAmount" required min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="payDate" required>
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="payType" required>
+              <option value="Advance">Advance</option>
+              <option value="Partial">Partial</option>
+              <option value="Final">Final</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-success">+ Add Payment</button>
+        </form>
+        <table style="margin-top:20px;">
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+          <tbody id="paymentsTable"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📤 Expenses</h3>
+      </div>
+      <div class="card-body">
+        <form id="expenseForm" class="form-row">
+          <div class="form-group">
+            <label>Amount (LKR)</label>
+            <input type="number" id="expAmount" required min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="expDate" required>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="expCategory" required>
+              <option value="Travel">Travel</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Software">Software</option>
+              <option value="Materials">Materials</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-danger">+ Add Expense</button>
+        </form>
+        <table style="margin-top:20px;">
+          <thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+          <tbody id="expensesTable"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    const projectId = new URLSearchParams(window.location.search).get('id');
+    let currentUser = null;
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.querySelector('.overlay').classList.toggle('show');
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = '../../index.html';
+    }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    async function loadProject() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADMIN') { window.location.href = '../../index.html'; return; }
+      currentUser = userData;
+
+      if (!projectId) { alert('No project ID'); window.location.href = 'projects.html'; return; }
+
+      // Load project
+      const { data: project, error } = await sb.from('projects').select('*').eq('id', projectId).single();
+      if (error || !project) { alert('Project not found'); window.location.href = 'projects.html'; return; }
+
+      document.getElementById('projectTitle').textContent = project.project_name;
+      document.getElementById('projectClient').textContent = 'Client: ' + project.client_name;
+      document.getElementById('projectCategory').textContent = project.category;
+      document.getElementById('projectDate').textContent = project.project_date;
+      document.getElementById('projectCreated').textContent = new Date(project.created_at).toLocaleDateString();
+      document.getElementById('projectStatus').textContent = project.status;
+      document.getElementById('projectStatus').className = 'badge badge-' + (project.status === 'OPEN' ? 'info' : 'success');
+      if (project.description) {
+        document.getElementById('projectDescription').innerHTML = '<strong>Description:</strong> ' + project.description;
+      }
+
+      // Set default dates
+      document.getElementById('payDate').valueAsDate = new Date();
+      document.getElementById('expDate').valueAsDate = new Date();
+
+      loadPayments();
+      loadExpenses();
+    }
+
+    async function loadPayments() {
+      const { data: payments } = await sb.from('project_payments').select('*').eq('project_id', projectId).order('payment_date', { ascending: false });
+
+      const total = (payments || []).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      document.getElementById('totalPayments').textContent = formatCurrency(total);
+
+      const tbody = document.getElementById('paymentsTable');
+      if (!payments || payments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666;">No payments yet</td></tr>';
+      } else {
+        tbody.innerHTML = payments.map(p => `
+          <tr>
+            <td>${p.payment_date}</td>
+            <td>${p.payment_type}</td>
+            <td style="color:#10b981; font-weight:600;">${formatCurrency(p.amount)}</td>
+            <td>${p.notes || '-'}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">Delete</button></td>
+          </tr>
+        `).join('');
+      }
+
+      updateProfit();
+    }
+
+    async function loadExpenses() {
+      const { data: expenses } = await sb.from('project_expenses').select('*').eq('project_id', projectId).order('expense_date', { ascending: false });
+
+      const total = (expenses || []).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      document.getElementById('totalExpenses').textContent = formatCurrency(total);
+
+      const tbody = document.getElementById('expensesTable');
+      if (!expenses || expenses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666;">No expenses yet</td></tr>';
+      } else {
+        tbody.innerHTML = expenses.map(e => `
+          <tr>
+            <td>${e.expense_date}</td>
+            <td>${e.category}</td>
+            <td style="color:#ef4444; font-weight:600;">${formatCurrency(e.amount)}</td>
+            <td>${e.notes || '-'}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteExpense('${e.id}')">Delete</button></td>
+          </tr>
+        `).join('');
+      }
+
+      updateProfit();
+    }
+
+    function updateProfit() {
+      const payments = parseFloat(document.getElementById('totalPayments').textContent.replace(/[^0-9.-]/g, '')) || 0;
+      const expenses = parseFloat(document.getElementById('totalExpenses').textContent.replace(/[^0-9.-]/g, '')) || 0;
+      const profit = payments - expenses;
+      document.getElementById('netProfit').textContent = formatCurrency(profit);
+      document.getElementById('netProfit').style.color = profit >= 0 ? '#2563eb' : '#ef4444';
+    }
+
+    // Add Payment
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await sb.from('project_payments').insert({
+        project_id: projectId,
+        amount: parseFloat(document.getElementById('payAmount').value),
+        payment_date: document.getElementById('payDate').value,
+        payment_type: document.getElementById('payType').value,
+        created_by: currentUser.id
+      });
+      if (error) alert('Error: ' + error.message);
+      else {
+        document.getElementById('payAmount').value = '';
+        loadPayments();
+      }
+    });
+
+    // Add Expense
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await sb.from('project_expenses').insert({
+        project_id: projectId,
+        amount: parseFloat(document.getElementById('expAmount').value),
+        expense_date: document.getElementById('expDate').value,
+        category: document.getElementById('expCategory').value,
+        created_by: currentUser.id
+      });
+      if (error) alert('Error: ' + error.message);
+      else {
+        document.getElementById('expAmount').value = '';
+        loadExpenses();
+      }
+    });
+
+    async function deletePayment(id) {
+      if (!confirm('Delete this payment?')) return;
+      await sb.from('project_payments').delete().eq('id', id);
+      loadPayments();
+    }
+
+    async function deleteExpense(id) {
+      if (!confirm('Delete this expense?')) return;
+      await sb.from('project_expenses').delete().eq('id', id);
+      loadExpenses();
+    }
+
+    async function deleteProject() {
+      if (!confirm('DELETE this entire project? This cannot be undone!')) return;
+      await sb.from('projects').delete().eq('id', projectId);
+      window.location.href = 'projects.html';
+    }
+
+    loadProject();
+  </script>
+</body>
+</html>

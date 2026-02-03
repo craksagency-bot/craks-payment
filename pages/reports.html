@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Reports</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/forms.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <div class="loading-overlay hidden" id="loading-overlay"><div class="spinner"></div></div>
+  <div class="sidebar-overlay"></div>
+
+  <div class="app-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>CRAKS</h2>
+        <p>Payment Management</p>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="admin-dashboard.html"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="add-project.html"><span class="nav-icon">+</span> Add Project</a></li>
+        <li><a href="monthly-payout.html"><span class="nav-icon">$</span> Monthly Payouts</a></li>
+        <li><a href="manage-users.html"><span class="nav-icon">&#9775;</span> Manage Users</a></li>
+        <li><a href="company-fund.html"><span class="nav-icon">&#9733;</span> Company Fund</a></li>
+        <li><a href="reports.html" class="active"><span class="nav-icon">&#9776;</span> Reports</a></li>
+      </ul>
+      <div class="sidebar-user">
+        <div class="user-name"></div>
+        <div class="user-role"></div>
+        <button class="btn-logout" id="btn-logout">Log out</button>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="mobile-header">
+        <button class="hamburger"><span></span><span></span><span></span></button>
+        <h3>CRAKS</h3>
+        <div></div>
+      </div>
+
+      <div id="alert-container"></div>
+
+      <div class="page-header">
+        <h1>Reports</h1>
+      </div>
+
+      <!-- Report Controls -->
+      <div class="card">
+        <h3 class="mb-16">Generate Report</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Report Type</label>
+            <select id="report-type">
+              <option value="income">Monthly Income Summary</option>
+              <option value="payouts">Payout List</option>
+              <option value="yearly">Year-end Summary</option>
+              <option value="fund">Company Fund Statement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>From</label>
+            <input type="date" id="date-from">
+          </div>
+          <div class="form-group">
+            <label>To</label>
+            <input type="date" id="date-to">
+          </div>
+        </div>
+        <div class="flex gap-12">
+          <button class="btn btn-primary" id="btn-preview">Preview Report</button>
+          <button class="btn btn-outline" id="btn-export-csv">Export CSV</button>
+          <button class="btn btn-outline" id="btn-export-pdf">Export PDF</button>
+        </div>
+      </div>
+
+      <!-- Report Preview -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Report Preview</h3>
+        </div>
+        <div class="table-container" id="report-preview">
+          <div class="empty-state">
+            <p>Select a report type and click Preview to view data</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/reports.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+/* CRAKS - Form Styles */
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.form-group label .required {
+  color: var(--danger);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--white);
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background: var(--neutral-light);
+  cursor: not-allowed;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-group .form-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.form-group .form-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+  display: none;
+}
+
+.form-group.error input,
+.form-group.error select {
+  border-color: var(--danger);
+}
+
+.form-group.error .form-error {
+  display: block;
+}
+
+/* Form Row (inline fields) */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Dynamic List (installments / expenses) */
+.dynamic-list {
+  margin-bottom: 24px;
+}
+
+.dynamic-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dynamic-list-header h3 {
+  font-size: 16px;
+}
+
+.dynamic-item {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  background: var(--neutral-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.dynamic-item .item-number {
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 10px 0;
+}
+
+.dynamic-item .btn-remove {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 10px;
+  line-height: 1;
+}
+
+.dynamic-item .btn-remove:hover {
+  background: var(--danger-light);
+  border-radius: var(--radius-sm);
+}
+
+/* Calculated fields */
+.calculated-field {
+  background: var(--primary-light);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.calculated-field .calc-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calculated-field .calc-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.calculated-field .calc-value.negative {
+  color: var(--danger);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Login Form */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.login-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 48px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box h1 {
+  text-align: center;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.login-box .subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.login-box .btn-primary {
+  width: 100%;
+  justify-content: center;
+}
+
+.login-error {
+  background: var(--danger-light);
+  color: var(--danger);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+  display: none;
+}
+
+.login-links {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.login-links a {
+  font-size: 13px;
+  color: var(--primary);
+}
+
+/* Expense item (specific layout) */
+.expense-item {
+  grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
+}
+
+/* Installment item */
+.installment-item {
+  grid-template-columns: 50px 1fr 1fr 1.5fr auto;
+}
+
+/* Checkbox */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.form-check label {
+  font-size: 13px;
+  margin: 0;
+}
