@@ -131,9 +131,10 @@
       let query = sb.from('project_expenses').select('*, projects(project_name)').order('expense_date', { ascending: false });
 
       if (month) {
-        const [year, mon] = month.split('-').map(Number);
         const firstDay = month + '-01';
-        const lastDay = new Date(year, mon, 0).toISOString().split('T')[0];
+        const [year, mon] = month.split('-').map(Number);
+        const lastDayDate = new Date(year, mon, 0);
+        const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayDate.getDate()).padStart(2, '0');
         query = query.gte('expense_date', firstDay).lte('expense_date', lastDay);
       }
       if (category) query = query.eq('category', category);
