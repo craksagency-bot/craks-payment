@@ -154,13 +154,26 @@
       let query = sb.from('project_payments').select('*, projects(project_name, client_name)').order('payment_date', { ascending: false });
 
       if (month) {
-        // month = "2026-02"
-        const firstDay = month + '-01';  // "2026-02-01"
-        const [year, mon] = month.split('-').map(Number);  // year=2026, mon=2
-        // Last day: new Date(2026, 2, 0) = Feb 28/29
-        const lastDayNum = new Date(year, mon, 0).getDate();
-        const lastDay = month + '-' + String(lastDayNum).padStart(2, '0');  // "2026-02-28"
-        console.log('Month filter:', month, '| Range:', firstDay, 'to', lastDay);
+        // month = "2026-02" means February 2026
+        const [year, mon] = month.split('-').map(Number);
+        const firstDay = month + '-01';
+        // Get last day: Create date for 1st of NEXT month, then go back 1 day
+        const lastDate = new Date(year, mon, 0); // Day 0 of month 'mon' = last day of previous month
+        // Wait - mon=2 means we want Feb, but new Date(2026,2,0) = last day of Jan!
+        // Fix: use mon (not mon-1) because mon from split is 1-12, and JS months are 0-11
+        // new Date(2026, 2, 0) = Feb 28 (day 0 of March)
+        // But we have mon=2 for Feb, so new Date(2026, 2, 0) = Jan 31! WRONG!
+        // Correct: new Date(year, mon, 0) where mon is already 1-12 based = CORRECT because:
+        // mon=2, new Date(2026, 2, 0) = day 0 of index-2 month (March) = Feb 28 ✅
+
+        // Actually let's just be explicit:
+        const lastDayOfMonth = new Date(year, mon, 0).getDate();
+        const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayOfMonth).padStart(2, '0');
+
+        console.log('Selected month:', month);
+        console.log('Parsed: year=' + year + ', mon=' + mon);
+        console.log('Date range:', firstDay, 'to', lastDay);
+
         query = query.gte('payment_date', firstDay).lte('payment_date', lastDay);
       }
       if (type) {
