@@ -133,8 +133,8 @@
       if (month) {
         const firstDay = month + '-01';
         const [year, mon] = month.split('-').map(Number);
-        const lastDayDate = new Date(year, mon, 0);
-        const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayDate.getDate()).padStart(2, '0');
+        const lastDayNum = new Date(year, mon, 0).getDate();
+        const lastDay = month + '-' + String(lastDayNum).padStart(2, '0');
         query = query.gte('expense_date', firstDay).lte('expense_date', lastDay);
       }
       if (category) query = query.eq('category', category);
