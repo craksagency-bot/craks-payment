@@ -138,7 +138,10 @@
       const now = new Date();
       for (let i = 0; i < 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const value = d.toISOString().slice(0, 7);
+        // Don't use toISOString() - it converts to UTC and can shift the month!
+        const year = d.getFullYear();
+        const month = d.getMonth() + 1; // getMonth() is 0-indexed
+        const value = year + '-' + String(month).padStart(2, '0');
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         select.innerHTML += `<option value="${value}">${label}</option>`;
       }
@@ -157,23 +160,11 @@
         // month = "2026-02" means February 2026
         const [year, mon] = month.split('-').map(Number);
         const firstDay = month + '-01';
-        // Get last day: Create date for 1st of NEXT month, then go back 1 day
-        const lastDate = new Date(year, mon, 0); // Day 0 of month 'mon' = last day of previous month
-        // Wait - mon=2 means we want Feb, but new Date(2026,2,0) = last day of Jan!
-        // Fix: use mon (not mon-1) because mon from split is 1-12, and JS months are 0-11
-        // new Date(2026, 2, 0) = Feb 28 (day 0 of March)
-        // But we have mon=2 for Feb, so new Date(2026, 2, 0) = Jan 31! WRONG!
-        // Correct: new Date(year, mon, 0) where mon is already 1-12 based = CORRECT because:
-        // mon=2, new Date(2026, 2, 0) = day 0 of index-2 month (March) = Feb 28 ✅
-
-        // Actually let's just be explicit:
+        // Get last day of month: new Date(year, mon, 0) gives last day
+        // Because mon is 1-12 (from string), and JS months are 0-11
+        // So new Date(2026, 2, 0) = day 0 of March = Feb 28
         const lastDayOfMonth = new Date(year, mon, 0).getDate();
-        const lastDay = year + '-' + String(mon).padStart(2, '0') + '-' + String(lastDayOfMonth).padStart(2, '0');
-
-        console.log('Selected month:', month);
-        console.log('Parsed: year=' + year + ', mon=' + mon);
-        console.log('Date range:', firstDay, 'to', lastDay);
-
+        const lastDay = month + '-' + String(lastDayOfMonth).padStart(2, '0');
         query = query.gte('payment_date', firstDay).lte('payment_date', lastDay);
       }
       if (type) {
