@@ -432,7 +432,7 @@
 
       // Pending payouts
       const { data: pendingPayouts, count: pendingCount } = await sb.from('member_payouts')
-        .select('*, users(name)', { count: 'exact' })
+        .select('*, users!member_payouts_user_id_fkey(name)', { count: 'exact' })
         .eq('status', 'Pending')
         .order('month', { ascending: false })
         .limit(5);
