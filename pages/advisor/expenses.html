@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Expenses (Advisor)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .readonly-banner { background: #fef3c7; color: #92400e; padding: 12px 20px; text-align: center; font-weight: 600; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; }
+    .sidebar { position: fixed; left: 0; top: 48px; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .sidebar-header p { font-size: 12px; opacity: 0.7; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #f59e0b; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; padding-top: 70px; }
+    .page-header { margin-bottom: 25px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .filters { display: flex; gap: 15px; flex-wrap: wrap; }
+    .filters select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; }
+    .total-box { background: #fee2e2; color: #dc2626; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .total-box .label { font-size: 14px; }
+    .total-box .value { font-size: 32px; font-weight: bold; }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding-top: 60px; }
+      .readonly-banner { position: relative; }
+    }
+  </style>
+</head>
+<body>
+  <div class="readonly-banner">🔒 Read-Only Mode - You can view all data but cannot make changes</div>
+
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>CRAKS</h2>
+      <p>Advisor View</p>
+    </div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <a href="projects.html" class="nav-item"><i>📁</i> All Projects</a>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item active"><i>📤</i> Expenses</a>
+      <a href="company-fund.html" class="nav-item"><i>🏦</i> Company Fund</a>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>All Expenses</h1>
+    </div>
+
+    <div class="total-box">
+      <div class="label">Total Expenses (Filtered)</div>
+      <div class="value" id="totalAmount">LKR 0.00</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Expense Records</h3>
+        <div class="filters">
+          <select id="filterMonth" onchange="loadExpenses()">
+            <option value="">All Months</option>
+          </select>
+          <select id="filterCategory" onchange="loadExpenses()">
+            <option value="">All Categories</option>
+            <option value="Travel">Travel</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Software">Software</option>
+            <option value="Materials">Materials</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Project</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTable">
+            <tr><td colspan="5" style="text-align:center; padding:30px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    async function logout() { await sb.auth.signOut(); window.location.href = '../../index.html'; }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    function populateMonths() {
+      const select = document.getElementById('filterMonth');
+      const now = new Date();
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const year = d.getFullYear();
+        const month = d.getMonth() + 1;
+        const value = year + '-' + String(month).padStart(2, '0');
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        select.innerHTML += `<option value="${value}">${label}</option>`;
+      }
+    }
+
+    async function loadExpenses() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADVISOR') {
+        alert('Access denied. Advisor only.');
+        window.location.href = '../../index.html';
+        return;
+      }
+
+      const month = document.getElementById('filterMonth').value;
+      const category = document.getElementById('filterCategory').value;
+
+      let query = sb.from('project_expenses').select('*, projects(project_name)').order('expense_date', { ascending: false });
+
+      if (month) {
+        const [year, mon] = month.split('-').map(Number);
+        const firstDay = month + '-01';
+        const lastDayNum = new Date(year, mon, 0).getDate();
+        const lastDay = month + '-' + String(lastDayNum).padStart(2, '0');
+        query = query.gte('expense_date', firstDay).lte('expense_date', lastDay);
+      }
+      if (category) query = query.eq('category', category);
+
+      const { data: expenses, error } = await query;
+      if (error) { alert('Error: ' + error.message); return; }
+
+      const total = (expenses || []).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      document.getElementById('totalAmount').textContent = formatCurrency(total);
+
+      const tbody = document.getElementById('expensesTable');
+      if (!expenses || expenses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#666;">No expenses found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = expenses.map(e => `
+        <tr>
+          <td>${e.expense_date}</td>
+          <td>${e.projects?.project_name || '-'}</td>
+          <td><span class="badge" style="background:#f3f4f6; color:#374151;">${e.category}</span></td>
+          <td style="color:#ef4444; font-weight:600;">${formatCurrency(e.amount)}</td>
+          <td>${e.notes || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    populateMonths();
+    loadExpenses();
+  </script>
+</body>
+</html>

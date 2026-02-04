@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRAKS - Company Fund (Advisor)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .readonly-banner { background: #fef3c7; color: #92400e; padding: 12px 20px; text-align: center; font-weight: 600; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; }
+    .sidebar { position: fixed; left: 0; top: 48px; bottom: 0; width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 0; z-index: 1000; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { font-size: 24px; letter-spacing: 2px; }
+    .sidebar-header p { font-size: 12px; opacity: 0.7; }
+    .nav-menu { padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #f59e0b; }
+    .nav-item i { width: 20px; margin-right: 12px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; }
+    .main-content { margin-left: 260px; padding: 20px; padding-top: 70px; }
+    .page-header { margin-bottom: 25px; }
+    .page-header h1 { font-size: 28px; color: #1a1a2e; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { padding: 20px; border-bottom: 1px solid #eee; }
+    .card-body { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9fafb; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-danger { background: #fee2e2; color: #dc2626; }
+    .balance-card { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 40px; border-radius: 16px; text-align: center; margin-bottom: 25px; }
+    .balance-card .label { font-size: 16px; opacity: 0.9; }
+    .balance-card .value { font-size: 48px; font-weight: bold; margin-top: 10px; }
+    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px; }
+    .stat-card { background: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .stat-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .stat-card .value { font-size: 24px; font-weight: bold; }
+    .stat-card.credit .value { color: #10b981; }
+    .stat-card.debit .value { color: #ef4444; }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding-top: 60px; }
+      .readonly-banner { position: relative; }
+      .stats-row { grid-template-columns: 1fr; }
+      .balance-card .value { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="readonly-banner">🔒 Read-Only Mode - You can view all data but cannot make changes</div>
+
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>CRAKS</h2>
+      <p>Advisor View</p>
+    </div>
+    <div class="nav-menu">
+      <a href="dashboard.html" class="nav-item"><i>📊</i> Dashboard</a>
+      <a href="projects.html" class="nav-item"><i>📁</i> All Projects</a>
+      <a href="payments.html" class="nav-item"><i>💰</i> Payments</a>
+      <a href="expenses.html" class="nav-item"><i>📤</i> Expenses</a>
+      <a href="company-fund.html" class="nav-item active"><i>🏦</i> Company Fund</a>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Company Fund</h1>
+    </div>
+
+    <div class="balance-card">
+      <div class="label">Current Balance</div>
+      <div class="value" id="currentBalance">LKR 0.00</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card credit">
+        <div class="label">Total Credits</div>
+        <div class="value" id="totalCredit">LKR 0</div>
+      </div>
+      <div class="stat-card debit">
+        <div class="label">Total Debits</div>
+        <div class="value" id="totalDebit">LKR 0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Transaction History</h3></div>
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Reason</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTable">
+            <tr><td colspan="5" style="text-align:center; padding:30px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://poilgduwlqtxjiudarew.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaWxnZHV3bHF0eGppdWRhcmV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjU1ODIsImV4cCI6MjA4NTcwMTU4Mn0.ixPxRwiLafCoWNucOdkCoh3BqeQaiadM3r9B5lQKCSg'
+    );
+
+    async function logout() { await sb.auth.signOut(); window.location.href = '../../index.html'; }
+
+    function formatCurrency(amount) {
+      return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    async function loadFund() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = '../../index.html'; return; }
+
+      const { data: userData } = await sb.from('users').select('*').eq('id', user.id).single();
+      if (!userData || userData.role !== 'ADVISOR') {
+        alert('Access denied. Advisor only.');
+        window.location.href = '../../index.html';
+        return;
+      }
+
+      const { data: transactions, error } = await sb.from('company_fund')
+        .select('*')
+        .order('entry_date', { ascending: false });
+
+      if (error) { alert('Error: ' + error.message); return; }
+
+      let totalCredit = 0, totalDebit = 0;
+      (transactions || []).forEach(t => {
+        if (t.type === 'Credit') totalCredit += parseFloat(t.amount);
+        else totalDebit += parseFloat(t.amount);
+      });
+
+      const balance = totalCredit - totalDebit;
+
+      document.getElementById('currentBalance').textContent = formatCurrency(balance);
+      document.getElementById('totalCredit').textContent = formatCurrency(totalCredit);
+      document.getElementById('totalDebit').textContent = formatCurrency(totalDebit);
+
+      const tbody = document.getElementById('transactionsTable');
+      if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#666;">No transactions found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = transactions.map(t => `
+        <tr>
+          <td>${t.entry_date}</td>
+          <td><span class="badge badge-${t.type === 'Credit' ? 'success' : 'danger'}">${t.type}</span></td>
+          <td style="color:${t.type === 'Credit' ? '#10b981' : '#ef4444'}; font-weight:600;">${formatCurrency(t.amount)}</td>
+          <td>${t.reason}</td>
+          <td>${t.reference_month || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    loadFund();
+  </script>
+</body>
+</html>
