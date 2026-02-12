@@ -3,7 +3,7 @@
   "short_name": "Craks Team",
   "start_url": "/craks-payment/",
   "scope": "/craks-payment/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "icons": [
@@ -14,4 +14,5 @@
     }
   ]
 }
+
 
